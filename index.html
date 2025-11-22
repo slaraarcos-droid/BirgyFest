@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>¡BIRGYFEST! - Tu Pase de Acceso</title>
+    <title>¡BIRGYFEST! - Confirmación de Asistencia</title>
     <script src="https://cdn.tailwindcss.com"></script>
     
     <!-- Importaciones de Firebase -->
@@ -12,7 +12,7 @@
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         
-        // --- TUS DATOS REALES ---
+        // --- TUS DATOS REALES DE FIREBASE ---
         const appId = 'birgyfest'; 
         const firebaseConfig = {
             apiKey: "AIzaSyCVf3c_hHbZnBkapODJK13Tef57IAZoOkU",
@@ -24,7 +24,7 @@
         };
 
         // --- URL DE TU ESCÁNER ---
-        // Apunta al archivo scanner.html en tu repositorio
+        // Esta URL apunta al archivo 'scanner.html' que subiremos después.
         const QR_BASE_URL = `https://slaraarcos-droid.github.io/BirgyFest/scanner.html?guestId=`;
         
         let db, auth, userId;
@@ -34,9 +34,9 @@
         db = getFirestore(app);
         auth = getAuth(app);
 
-        // Autenticación Anónima
+        // Autenticación Anónima para poder guardar datos
         signInAnonymously(auth).then(() => {
-            console.log("Conectado para registrar invitados.");
+            console.log("Conectado a Firebase anonimamente.");
         }).catch((error) => {
             console.error("Error de conexión:", error);
             alert("Error de conexión con la base de datos.");
@@ -68,7 +68,7 @@
 
             const btn = document.getElementById('btn-submit');
             btn.disabled = true;
-            btn.textContent = "Registrando...";
+            btn.textContent = "Guardando en Firebase...";
 
             // 1. Creamos el ID único
             const guestId = generateUUID();
@@ -87,7 +87,7 @@
                 // 3. Guardar en Firestore (Ruta estricta)
                 await setDoc(doc(db, `/artifacts/${appId}/public/data/birgyfest_guests`, guestId), guestData);
                 
-                // 4. Guardar en el navegador
+                // 4. Guardar en el navegador para no perderlo
                 localStorage.setItem('birgyfest_guest_id', guestId);
                 
                 // 5. Mostrar el QR
@@ -95,8 +95,8 @@
                 btn.textContent = "¡Registro Exitoso!";
 
             } catch (error) {
-                console.error("Error:", error);
-                alert("Hubo un error al guardar. Intenta de nuevo.");
+                console.error("Error al guardar en Firebase:", error);
+                alert("Hubo un error al guardar en la base de datos. Revisa la consola.");
                 btn.disabled = false;
                 btn.textContent = "¡CONFIRMO MI ASISTENCIA! (RSVP)";
             }
@@ -227,7 +227,7 @@
         
         <!-- Footer -->
         <p class="text-center text-gray-600 text-xs mt-6 font-medium">
-            © 2025 BirgyFest
+            © 2025 BirgyFest Eventos
         </p>
     </div>
 
