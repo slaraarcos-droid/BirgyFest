@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>¡BIRGYFEST! - Confirmación de Asistencia</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Librería segura para generar QR localmente -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     
     <!-- Importaciones de Firebase -->
     <script type="module">
@@ -24,7 +26,7 @@
         };
 
         // --- URL DE TU ESCÁNER ---
-        // Esta URL apunta al archivo 'scanner.html' que subiremos después.
+        // Asegúrate de que el archivo del escáner se llame 'scanner.html' en tu GitHub
         const QR_BASE_URL = `https://slaraarcos-droid.github.io/BirgyFest/scanner.html?guestId=`;
         
         let db, auth, userId;
@@ -34,12 +36,11 @@
         db = getFirestore(app);
         auth = getAuth(app);
 
-        // Autenticación Anónima para poder guardar datos
+        // Autenticación Anónima
         signInAnonymously(auth).then(() => {
-            console.log("Conectado a Firebase anonimamente.");
+            console.log("Conectado a Firebase.");
         }).catch((error) => {
             console.error("Error de conexión:", error);
-            alert("Error de conexión con la base de datos.");
         });
 
         onAuthStateChanged(auth, (user) => {
@@ -68,7 +69,7 @@
 
             const btn = document.getElementById('btn-submit');
             btn.disabled = true;
-            btn.textContent = "Guardando en Firebase...";
+            btn.textContent = "Generando Pase...";
 
             // 1. Creamos el ID único
             const guestId = generateUUID();
@@ -78,16 +79,16 @@
                 id: guestId,
                 name: guestName,
                 email: guestEmail || 'No especificado',
-                has_entered: false, // IMPORTANTE: Empieza como "No ha entrado"
+                has_entered: false, 
                 timestamp: new Date(),
                 registered_by: userId
             };
 
             try {
-                // 3. Guardar en Firestore (Ruta estricta)
+                // 3. Guardar en Firestore
                 await setDoc(doc(db, `/artifacts/${appId}/public/data/birgyfest_guests`, guestId), guestData);
                 
-                // 4. Guardar en el navegador para no perderlo
+                // 4. Guardar en el navegador
                 localStorage.setItem('birgyfest_guest_id', guestId);
                 
                 // 5. Mostrar el QR
@@ -95,43 +96,55 @@
                 btn.textContent = "¡Registro Exitoso!";
 
             } catch (error) {
-                console.error("Error al guardar en Firebase:", error);
-                alert("Hubo un error al guardar en la base de datos. Revisa la consola.");
+                console.error("Error:", error);
+                alert("Hubo un error al guardar. Intenta de nuevo.");
                 btn.disabled = false;
                 btn.textContent = "¡CONFIRMO MI ASISTENCIA! (RSVP)";
             }
         };
 
-        // Función para mostrar el QR en pantalla
-        const showQrCode = (guestId) => {
-            // La URL que tendrá el QR
+        // --- FUNCIÓN CORREGIDA PARA GENERAR QR ---
+        window.showQrCode = (guestId) => {
             const finalUrl = QR_BASE_URL + guestId;
-            // Generador de imagen QR de Google Charts
-            const qrImageUrl = `https://chart.googleapis.com/chart?cht=qr&chs=300x300&chl=${encodeURIComponent(finalUrl)}`;
 
             const qrContainer = document.getElementById('qr-container');
             const formContainer = document.getElementById('form-container');
             
-            // Ocultamos formulario, mostramos QR
+            // Cambiar visibilidad
             formContainer.classList.add('hidden');
             qrContainer.classList.remove('hidden');
 
+            // Insertar estructura HTML
             qrContainer.innerHTML = `
-                <div class="p-6 bg-gray-900/90 rounded-2xl border-2 border-yellow-500 shadow-[0_0_30px_rgba(234,179,8,0.3)] animate-fade-in text-center">
+                <div class="p-6 bg-gray-900/90 rounded-2xl border-2 border-yellow-500 shadow-[0_0_30px_rgba(234,179,8,0.3)] animate-fade-in text-center flex flex-col items-center">
                     <h3 class="text-3xl font-black mb-2 text-yellow-400 title-font tracking-widest">¡ESTÁS DENTRO!</h3>
                     <p class="text-gray-300 mb-4 text-sm font-medium">Haz captura de pantalla a este código:</p>
                     
-                    <div class="p-4 bg-white rounded-xl inline-block mb-4">
-                        <img src="${qrImageUrl}" alt="Tu Código QR" class="w-64 h-64 object-contain">
-                    </div>
+                    <!-- Contenedor blanco para el QR -->
+                    <div id="qrcode-canvas" class="p-4 bg-white rounded-xl mb-4"></div>
                     
-                    <div class="bg-gray-800 rounded-lg p-3 border border-gray-700">
+                    <div class="bg-gray-800 rounded-lg p-3 border border-gray-700 w-full">
                         <p class="text-xs text-gray-400 uppercase tracking-wider mb-1">ID DE ACCESO</p>
                         <p class="text-xs text-yellow-500 font-mono break-all">${guestId}</p>
                     </div>
                     <p class="text-sm text-green-400 mt-4 font-bold uppercase tracking-wider animate-pulse">Presenta esto en la entrada</p>
                 </div>
             `;
+
+            // Generar el QR usando la librería local (Sin errores de imagen rota)
+            // Usamos setTimeout para asegurar que el div existe
+            setTimeout(() => {
+                const qrElement = document.getElementById("qrcode-canvas");
+                qrElement.innerHTML = ""; // Limpiar por si acaso
+                new QRCode(qrElement, {
+                    text: finalUrl,
+                    width: 200,
+                    height: 200,
+                    colorDark : "#000000",
+                    colorLight : "#ffffff",
+                    correctLevel : QRCode.CorrectLevel.H
+                });
+            }, 100);
         };
     </script>
 
