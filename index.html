@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>¡BIRGYFEST! - Tu Pase de Acceso</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Importaciones de Firebase -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        
+        // --- TUS DATOS REALES ---
+        const appId = 'birgyfest'; 
+        const firebaseConfig = {
+            apiKey: "AIzaSyCVf3c_hHbZnBkapODJK13Tef57IAZoOkU",
+            authDomain: "birgyfest.firebaseapp.com",
+            projectId: "birgyfest",
+            storageBucket: "birgyfest.firebasestorage.app",
+            messagingSenderId: "748620159762",
+            appId: "1:748620159762:web:0fb391badf84f5df35f1cb",
+        };
+
+        // --- URL DE TU ESCÁNER ---
+        // Apunta al archivo scanner.html en tu repositorio
+        const QR_BASE_URL = `https://slaraarcos-droid.github.io/BirgyFest/scanner.html?guestId=`;
+        
+        let db, auth, userId;
+
+        // Inicializar Firebase
+        const app = initializeApp(firebaseConfig);
+        db = getFirestore(app);
+        auth = getAuth(app);
+
+        // Autenticación Anónima
+        signInAnonymously(auth).then(() => {
+            console.log("Conectado para registrar invitados.");
+        }).catch((error) => {
+            console.error("Error de conexión:", error);
+            alert("Error de conexión con la base de datos.");
+        });
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                userId = user.uid;
+                // Si ya se registró antes, mostramos su QR guardado
+                const savedGuestId = localStorage.getItem('birgyfest_guest_id');
+                if (savedGuestId) {
+                    showQrCode(savedGuestId);
+                }
+            }
+        });
+
+        // Función para generar un ID único
+        const generateUUID = () => crypto.randomUUID();
+
+        // --- FUNCIÓN PRINCIPAL: REGISTRO ---
+        window.handleRsvp = async () => {
+            const guestName = document.getElementById('guest-name').value.trim();
+            const guestEmail = document.getElementById('guest-email').value.trim();
+            
+            if (!guestName) {
+                alert("Por favor, escribe tu nombre.");
+                return;
+            }
+
+            const btn = document.getElementById('btn-submit');
+            btn.disabled = true;
+            btn.textContent = "Registrando...";
+
+            // 1. Creamos el ID único
+            const guestId = generateUUID();
+
+            // 2. Datos a guardar
+            const guestData = {
+                id: guestId,
+                name: guestName,
+                email: guestEmail || 'No especificado',
+                has_entered: false, // IMPORTANTE: Empieza como "No ha entrado"
+                timestamp: new Date(),
+                registered_by: userId
+            };
+
+            try {
+                // 3. Guardar en Firestore (Ruta estricta)
+                await setDoc(doc(db, `/artifacts/${appId}/public/data/birgyfest_guests`, guestId), guestData);
+                
+                // 4. Guardar en el navegador
+                localStorage.setItem('birgyfest_guest_id', guestId);
+                
+                // 5. Mostrar el QR
+                showQrCode(guestId);
+                btn.textContent = "¡Registro Exitoso!";
+
+            } catch (error) {
+                console.error("Error:", error);
+                alert("Hubo un error al guardar. Intenta de nuevo.");
+                btn.disabled = false;
+                btn.textContent = "¡CONFIRMO MI ASISTENCIA! (RSVP)";
+            }
+        };
+
+        // Función para mostrar el QR en pantalla
+        const showQrCode = (guestId) => {
+            // La URL que tendrá el QR
+            const finalUrl = QR_BASE_URL + guestId;
+            // Generador de imagen QR de Google Charts
+            const qrImageUrl = `https://chart.googleapis.com/chart?cht=qr&chs=300x300&chl=${encodeURIComponent(finalUrl)}`;
+
+            const qrContainer = document.getElementById('qr-container');
+            const formContainer = document.getElementById('form-container');
+            
+            // Ocultamos formulario, mostramos QR
+            formContainer.classList.add('hidden');
+            qrContainer.classList.remove('hidden');
+
+            qrContainer.innerHTML = `
+                <div class="p-6 bg-gray-900/90 rounded-2xl border-2 border-yellow-500 shadow-[0_0_30px_rgba(234,179,8,0.3)] animate-fade-in text-center">
+                    <h3 class="text-3xl font-black mb-2 text-yellow-400 title-font tracking-widest">¡ESTÁS DENTRO!</h3>
+                    <p class="text-gray-300 mb-4 text-sm font-medium">Haz captura de pantalla a este código:</p>
+                    
+                    <div class="p-4 bg-white rounded-xl inline-block mb-4">
+                        <img src="${qrImageUrl}" alt="Tu Código QR" class="w-64 h-64 object-contain">
+                    </div>
+                    
+                    <div class="bg-gray-800 rounded-lg p-3 border border-gray-700">
+                        <p class="text-xs text-gray-400 uppercase tracking-wider mb-1">ID DE ACCESO</p>
+                        <p class="text-xs text-yellow-500 font-mono break-all">${guestId}</p>
+                    </div>
+                    <p class="text-sm text-green-400 mt-4 font-bold uppercase tracking-wider animate-pulse">Presenta esto en la entrada</p>
+                </div>
+            `;
+        };
+    </script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;700;900&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #030712;
+            color: white;
+        }
+        .title-font { font-family: 'Bebas Neue', cursive; }
+        .neon-text { text-shadow: 0 0 10px rgba(234, 179, 8, 0.7); }
+        
+        .btn-rsvp {
+            background: linear-gradient(135deg, #eab308 0%, #a16207 100%);
+            color: #000;
+            font-weight: 900;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .btn-rsvp:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 20px rgba(234, 179, 8, 0.5);
+        }
+        .btn-rsvp:active { transform: scale(0.98); }
+        
+        .input-style {
+            background: #1f2937; 
+            border: 2px solid #374151; 
+            color: white; 
+            padding: 14px; 
+            border-radius: 12px; 
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        .input-style:focus { border-color: #eab308; }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4 bg-[url('https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=1920&auto=format&fit=crop')] bg-cover bg-center bg-no-repeat relative">
+    <!-- Capa oscura para leer el texto -->
+    <div class="absolute inset-0 bg-black/85 backdrop-blur-sm"></div>
+
+    <div class="relative w-full max-w-md z-10">
+        
+        <!-- Tarjeta Principal -->
+        <div class="bg-gray-900/80 border border-gray-700 rounded-3xl p-8 shadow-2xl">
+            
+            <header class="text-center mb-8">
+                <h1 class="title-font text-7xl text-yellow-400 mb-2 neon-text leading-none">BIRGYFEST</h1>
+                <p class="text-gray-400 text-xs font-bold uppercase tracking-[0.3em] border-b border-gray-700 pb-4">
+                    Exclusive Party Access
+                </p>
+            </header>
+
+            <!-- Detalles Rápidos -->
+            <div class="grid grid-cols-2 gap-4 mb-8">
+                <div class="bg-gray-800/50 p-4 rounded-2xl border border-gray-700 text-center">
+                    <p class="text-blue-400 text-xs font-bold uppercase tracking-wider">Fecha</p>
+                    <p class="text-2xl font-black text-white title-font">06 DIC</p>
+                </div>
+                <div class="bg-gray-800/50 p-4 rounded-2xl border border-gray-700 text-center">
+                    <p class="text-blue-400 text-xs font-bold uppercase tracking-wider">Hora</p>
+                    <p class="text-2xl font-black text-white title-font">11:00 PM</p>
+                </div>
+            </div>
+
+            <!-- Formulario -->
+            <div id="form-container" class="space-y-5">
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-2 ml-1">Nombre Completo</label>
+                    <input type="text" id="guest-name" placeholder="Ej: Juan Pérez" class="w-full input-style">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-2 ml-1">Email (Opcional)</label>
+                    <input type="email" id="guest-email" placeholder="ejemplo@correo.com" class="w-full input-style">
+                </div>
+                
+                <button id="btn-submit" onclick="handleRsvp()" class="w-full btn-rsvp py-4 rounded-xl text-lg shadow-lg mt-4">
+                    CONFIRMAR MI ASISTENCIA
+                </button>
+                <p class="text-center text-xs text-gray-500 mt-4">
+                    Al confirmar, se generará tu pase QR único.
+                </p>
+            </div>
+
+            <!-- Contenedor QR (Oculto inicialmente) -->
+            <div id="qr-container" class="hidden animate-fade-in">
+                <!-- Aquí se inyecta el QR -->
+            </div>
+
+        </div>
+        
+        <!-- Footer -->
+        <p class="text-center text-gray-600 text-xs mt-6 font-medium">
+            © 2025 BirgyFest Eventos
+        </p>
+    </div>
+
+</body>
+</html>
