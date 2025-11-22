@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>¡BIRGYFEST! Invitación VIP</title>
+    <!-- Carga de Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Configuración de Tipografía: Bebas Neue (Impacto) e Inter (Cuerpo) -->
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;600;800;900&display=swap" rel="stylesheet">
+    <style>
+        /* Estilos base para garantizar el fullscreen y el fondo */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #030712; /* Negro muy oscuro (slate-950) */
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0.5rem; /* Margen exterior reducido a 0.5rem */
+            position: relative;
+            /* Desactivar scroll general si el contenido cabe */
+            overflow: hidden; 
+        }
+
+        /* Efecto de fondo de rejilla animada (elegante y high-tech) */
+        .grid-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                linear-gradient(to right, #1f2937 1px, transparent 1px),
+                linear-gradient(to bottom, #1f2937 1px, transparent 1px);
+            background-size: 50px 50px;
+            opacity: 0.1;
+            z-index: 0;
+            animation: grid-scroll 60s linear infinite;
+        }
+
+        @keyframes grid-scroll {
+            from { background-position: 0 0; }
+            to { background-position: 50px 50px; }
+        }
+
+        .title-font {
+            font-family: 'Bebas Neue', cursive;
+        }
+
+        /* Clase para el efecto Glow/Neón (Golden/Amarillo vivo) */
+        .neon-golden {
+            text-shadow: 0 0 8px #facc15, 0 0 15px #f59e0b, 0 0 30px #d97706;
+            color: #fde047;
+            transition: all 0.3s ease;
+        }
+
+        /* Estilo de la tarjeta principal - Sin scroll interno */
+        #main-container {
+            max-width: 450px;
+            width: 100%;
+            /* Fija la altura para evitar scroll */
+            height: 98vh; /* Ligeramente más grande para aprovechar la pantalla */
+            background-color: #111827; /* Gris oscuro/Azul oscuro */
+            border-radius: 1.5rem;
+            box-shadow: 0 0 50px rgba(255, 255, 255, 0.05), 0 0 20px #facc1533;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 1rem; /* Padding interno reducido a 1rem */
+            overflow: hidden; /* CRÍTICO: Elimina el scroll interno */
+            position: relative; 
+            z-index: 10; 
+            /* Animación de entrada suave - Empieza 0.5s después del flash */
+            animation: fadeIn 0.8s ease-out 0.5s both; 
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Tarjetas de contenido con borde de color */
+        .content-card {
+            padding: 0.75rem; /* Padding de tarjeta más compacto */
+            border-radius: 0.75rem;
+            background-color: #1f2937; /* Fondo de tarjeta más claro */
+            margin-bottom: 0.6rem; /* Espacio entre tarjetas reducido */
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .content-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Estilos de Borde de Color con Glow Aumentado */
+        .border-blue-glow {
+            border: 2px solid #3b82f6;
+            box-shadow: 0 0 15px #3b82f6aa, inset 0 0 8px #3b82f666;
+        }
+        .border-red-glow {
+            border: 2px solid #ef4444;
+            box-shadow: 0 0 15px #ef4444aa, inset 0 0 8px #ef444466;
+        }
+        .border-yellow-glow {
+            border: 2px solid #facc15;
+            box-shadow: 0 0 15px #facc15aa, inset 0 0 8px #facc1566;
+        }
+
+        /* Estilo para la animación inicial de flash (BLANCO) */
+        #preloader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: white; /* FLASH BLANCO */
+            z-index: 9999; 
+            opacity: 1;
+            transition: opacity 0.5s ease-out; 
+        }
+        #preloader.hidden-flash {
+            opacity: 0;
+            pointer-events: none; 
+        }
+
+        /* Botón CTA - Estilo Único con Glow Intenso */
+        #rsvp-button {
+            background-image: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); /* Degradado Dorado/Naranja */
+            box-shadow: 0 4px 20px rgba(253, 230, 138, 0.7); /* Glow más fuerte */
+            border: none;
+            color: #1f2937; /* Texto oscuro para contraste */
+            transition: all 0.2s ease;
+        }
+        #rsvp-button:hover {
+            box-shadow: 0 6px 30px rgba(253, 230, 138, 0.9);
+            transform: scale(1.02);
+        }
+
+        /* Estilos del Modal */
+        #rsvp-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.85); /* Fondo oscuro con transparencia */
+            display: none; /* Oculto por defecto, se muestra con JS */
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        #rsvp-modal-content {
+            background-color: #111827;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            max-width: 90%;
+            width: 400px;
+            box-shadow: 0 0 30px #facc1566;
+            animation: modalFadeIn 0.3s ease-out;
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        #rsvp-modal-content input[type="text"] {
+            background-color: #1f2937;
+            border: 2px solid #facc15;
+            color: white;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            font-size: 1.125rem;
+            width: 100%;
+            outline: none;
+            box-shadow: 0 0 5px #facc1533;
+        }
+        
+    </style>
+</head>
+<body>
+
+    <!-- Fondo de Rejilla Animada -->
+    <div class="grid-bg"></div>
+
+    <!-- Animación de Flash Inicial (Preloader - Blanco Puro) -->
+    <div id="preloader">
+        <!-- El flash durará 0.5 segundos -->
+    </div>
+
+    <!-- Contenedor Principal (Phone Frame / Main Card) -->
+    <div id="main-container">
+
+        <!-- HEADER: Título y Subtítulo -->
+        <header class="text-center pt-1 pb-2"> <!-- Padding reducido -->
+            <h1 class="title-font text-6xl md:text-8xl font-black tracking-widest neon-golden mb-0"> <!-- Título ligeramente más pequeño en móvil -->
+                ¡BIRGYFEST!
+            </h1>
+            <!-- Lema más grande y con glow -->
+            <p class="text-lg text-yellow-500 font-bold title-font tracking-wider mt-0 px-2 neon-golden"> <!-- Lema ligeramente más pequeño -->
+                TU ACCESO A UNA NOCHE DONDE LA DIVERSIÓN LA PONES TÚ.
+            </p>
+            <h2 class="text-md md:text-xl text-gray-200 font-semibold uppercase tracking-wider mt-1 border-t border-b border-gray-700/50 py-1 inline-block">
+                ESTÁS OFICIALMENTE INVITADO/A
+            </h2>
+        </header>
+
+        <!-- CONTENIDO CENTRAL: Tarjetas de Evento -->
+        <div id="content-wrapper" class="flex flex-col gap-2 flex-grow justify-center"> <!-- Gap reducido -->
+
+            <!-- Tarjeta 1: Día y Hora (6 de Diciembre, 23:00 HRS) - Destacado Azul -->
+            <div class="content-card border-blue-glow text-center">
+                <p class="text-xs uppercase text-blue-400 font-bold mb-1 tracking-widest">DÍA Y HORA</p>
+                <p class="title-font text-3xl font-extrabold text-white"> <!-- Tamaño de texto reducido -->
+                    SÁBADO 6 DE DICIEMBRE
+                </p>
+                <p class="title-font text-4xl font-black text-red-500 mt-0"> <!-- Tamaño de texto reducido -->
+                    23:00 HRS
+                </p>
+            </div>
+
+            <!-- Tarjeta 2: Lugar (BIRGY, Ibiza 115) - Destacado Rojo -->
+            <div class="content-card border-red-glow text-center hover:cursor-pointer" onclick="window.open('https://maps.app.goo.gl/6RrKWMXKMJHRM5Bc6', '_blank')">
+                <p class="text-xs uppercase text-red-400 font-bold mb-1 tracking-widest">LUGAR <span class="text-xs text-gray-400">(Toca para Mapa)</span></p>
+                <p class="text-lg font-medium text-white mb-0"> <!-- Tamaño de texto reducido -->
+                    <span class="font-extrabold title-font">CASA DE BIRGY (ANFITRIÓN)</span>
+                    <br>
+                    <span class="text-sm text-gray-300">CALLE. IBIZA 115, LA MOLINA</span>
+                </p>
+            </div>
+
+            <!-- Tarjeta 3: Código de Conducta (Reglas) - Ahora más compacto y sin lista -->
+            <div class="content-card border-yellow-glow bg-zinc-800/80 p-2"> <!-- Padding de tarjeta de conducta reducido -->
+                <h3 class="text-xs uppercase text-yellow-400 font-bold mb-1 text-center tracking-widest">CÓDIGO DE CONDUCTA DEL BIRGYFEST</h3>
+                <p class="text-xs text-gray-200 font-medium text-center"> <!-- Texto de reglas reducido -->
+                    <span class="text-red-400 font-black">Prohibido irse sobrio.</span> Si no bebes, nos ofendes. 
+                    <span class="text-red-400 font-black">Bebida en mano,</span> fiesta asegurada. ¡No hay excusas!
+                </p>
+            </div>
+            
+            <!-- Sección de Cuenta Regresiva -->
+            <div class="text-center pt-1 pb-1"> <!-- Padding reducido -->
+                <h3 class="text-sm font-bold text-yellow-400 mb-2 title-font tracking-widest">¡EMPIEZA EN!</h3>
+                <div id="countdown" class="grid grid-cols-4 gap-2">
+                    <!-- Los valores se llenarán con JavaScript -->
+                </div>
+                <p id="countdown-message" class="text-red-500 font-black mt-2 text-xl title-font hidden">¡LA FIESTA HA COMENZADO!</p>
+            </div>
+
+        </div> <!-- Fin de Content Wrapper -->
+
+
+        <!-- FOOTER: Botón y Contacto -->
+        <footer class="text-center pt-2 pb-1 flex-shrink-0"> <!-- Padding reducido -->
+            <!-- Botón CTA con Glow y Animación -->
+            <button id="rsvp-button" onclick="showRSVPModal()" class="w-full text-white title-font font-black py-3 px-6 rounded-xl text-xl uppercase tracking-wider transition duration-300 transform hover:scale-[1.01] active:scale-95 focus:outline-none mb-2"> <!-- Padding de botón reducido -->
+                ¡CONFIRMO MI ASISTENCIA! (RSVP)
+            </button>
+            <p id="confirmation-status" class="mt-1 text-green-400 font-bold title-font hidden">
+                ¡CONFIRMACIÓN RECIBIDA! Nos vemos en el BirgyFest.
+            </p>
+            <p class="text-xs text-gray-500 italic mt-2">
+                Cualquier duda, contáctame al <a href="tel:+51922446008" class="text-yellow-400 hover:text-yellow-300 font-bold">922 446 008</a>
+            </p>
+        </footer>
+
+    </div>
+    
+    <!-- MODAL DE CONFIRMACIÓN DE ASISTENCIA (RSVP) -->
+    <div id="rsvp-modal" class="hidden" onclick="closeRSVPModal(event)">
+        <div id="rsvp-modal-content" onclick="event.stopPropagation()">
+            <h3 class="title-font text-2xl text-yellow-400 mb-4 text-center">¡Confirmemos tu asistencia!</h3>
+            <form id="rsvp-form" onsubmit="submitRSVP(event)">
+                <label for="guest-name" class="block text-sm font-bold text-gray-300 mb-2">Tu Nombre Completo:</label>
+                <input type="text" id="guest-name" name="Nombre" required placeholder="Ej: Juan Pérez" autofocus autocomplete="name">
+                
+                <button type="submit" class="mt-6 w-full text-white title-font font-black py-3 px-6 rounded-xl text-xl uppercase tracking-wider transition duration-300" 
+                    style="background-image: linear-gradient(135deg, #10b981 0%, #059669 100%); box-shadow: 0 4px 15px rgba(16, 185, 129, 0.7);">
+                    ¡SÍ, VOY AL BIRGYFEST!
+                </button>
+            </form>
+        </div>
+    </div>
+
+
+    <script>
+        // --- CONFIGURACIÓN DE GOOGLE FORMS ---
+        // !!! IDs OBTENIDOS DEL FORMULARIO PROPORCIONADO POR EL USUARIO !!!
+        
+        // ID del formulario (Ej: 1FAIpQLSc7z89_h_3c8j8tG_j5i4W1w-eQW5f6eY3H4qB-s4k)
+        const GOOGLE_FORM_ID = '1FAIpQLSdE4z2sLHVUwO5VrAdl9omlz2xOgFPj7GOsRrgNT3h2oLhadg'; 
+        // ID del campo 'Nombre' (Ej: 123456789)
+        const NAME_ENTRY_ID = '1788530279'; 
+        
+        // URL de envío al Google Form (se construye automáticamente con los IDs)
+        const GOOGLE_FORM_URL = `https://docs.google.com/forms/d/e/${GOOGLE_FORM_ID}/formResponse`;
+        
+        
+        // --- CONFIGURACIÓN DE LA FECHA ---
+        const targetYear = new Date().getFullYear();
+        // Usamos el 6 de Diciembre a las 23:00 (11 PM) como fecha objetivo
+        const partyDate = new Date("December 6, " + targetYear + " 23:00:00").getTime();
+        
+        // Elementos del DOM
+        const countdownEl = document.getElementById('countdown');
+        const countdownMessageEl = document.getElementById('countdown-message');
+        const rsvpButton = document.getElementById('rsvp-button');
+        const preloader = document.getElementById('preloader');
+        const rsvpModal = document.getElementById('rsvp-modal');
+        const confirmationStatus = document.getElementById('confirmation-status');
+
+
+        // MUESTRA EL MODAL DE CONFIRMACIÓN
+        function showRSVPModal() {
+            rsvpModal.classList.remove('hidden');
+            rsvpModal.style.display = 'flex';
+            document.getElementById('guest-name').focus();
+        }
+
+        // CIERRA EL MODAL
+        function closeRSVPModal(event) {
+            // Cierra si se hace clic fuera del contenido del modal
+            if (event.target === rsvpModal) {
+                rsvpModal.classList.add('hidden');
+                rsvpModal.style.display = 'none';
+            }
+        }
+        
+        // FUNCIÓN DE ENVÍO DEL FORMULARIO A GOOGLE SHEETS
+        async function submitRSVP(event) {
+            event.preventDefault();
+
+            // Desactivar el botón para evitar doble clic
+            const submitButton = event.target.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+            submitButton.textContent = "ENVIANDO...";
+
+            const guestName = document.getElementById('guest-name').value;
+            
+            // Verificación para asegurar que los campos no estén vacíos
+            if (!guestName.trim()) {
+                // No usamos alert(), solo reactivamos el botón y mostramos un mensaje sutil si es necesario
+                submitButton.disabled = false;
+                submitButton.textContent = "¡SÍ, VOY AL BIRGYFEST!";
+                // Podrías mostrar un mensaje de error dentro del modal aquí
+                return;
+            }
+
+            // Construir la carga útil (payload) para Google Forms
+            const formData = new FormData();
+            formData.append(`entry.${NAME_ENTRY_ID}`, guestName);
+            
+            try {
+                // Realizar la petición POST a la URL de respuesta del formulario
+                const response = await fetch(GOOGLE_FORM_URL, {
+                    method: 'POST',
+                    mode: 'no-cors', // Necesario para evitar problemas de CORS con Google Forms
+                    body: formData
+                });
+
+                // Actualización de la UI después del intento de envío.
+                rsvpModal.classList.add('hidden');
+                rsvpModal.style.display = 'none';
+
+                // Actualización del botón principal
+                rsvpButton.disabled = true;
+                rsvpButton.textContent = `¡ASISTENCIA CONFIRMADA! (${guestName.toUpperCase()})`;
+                rsvpButton.style.backgroundImage = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+                rsvpButton.style.boxShadow = '0 4px 15px rgba(16, 185, 129, 0.7)';
+                rsvpButton.classList.remove('hover:scale-[1.01]');
+                
+                // Mostrar mensaje de estado
+                confirmationStatus.classList.remove('hidden');
+                
+                console.log(`RSVP Enviado para: ${guestName}. Revisa tu Google Sheet.`);
+
+            } catch (error) {
+                console.error("Error al enviar el RSVP:", error);
+                
+                // Si hay un error, volvemos a activar el botón y mostramos un mensaje de error.
+                submitButton.disabled = false;
+                submitButton.textContent = "¡SÍ, VOY AL BIRGYFEST!";
+                // En lugar de alert, podrías usar un mensaje temporal en el modal o la página.
+                console.log("Ocurrió un error al confirmar. Por favor, verifica tu conexión o los IDs del formulario.");
+            }
+        }
+        
+        
+        // Función auxiliar para crear el bloque de tiempo visual
+        function createTimeBlock(value, label) {
+            return `
+                <div class="flex flex-col items-center p-2 rounded-lg title-font bg-zinc-700/30 backdrop-blur-sm border border-zinc-600/50 shadow-lg">
+                    <span class="text-4xl font-black text-white neon-golden">${String(value).padStart(2, '0')}</span> <!-- Tamaño de texto de cuenta regresiva reducido -->
+                    <span class="text-xs uppercase font-bold text-red-400 mt-1">${label}</span>
+                </div>
+            `;
+        }
+
+        // Función principal que actualiza el contador
+        const updateCountdown = () => {
+            const now = new Date().getTime();
+            const distance = partyDate - now;
+
+            countdownEl.innerHTML = ''; // Limpiar
+
+            if (distance < 0) {
+                // Fiesta terminada o en curso
+                clearInterval(countdownInterval);
+                countdownMessageEl.classList.remove('hidden');
+                countdownEl.innerHTML = createTimeBlock(0, 'Días') + createTimeBlock(0, 'Horas') + createTimeBlock(0, 'Minutos') + createTimeBlock(0, 'Segundos');
+                return;
+            }
+
+            // Cálculos
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            // Renderizar
+            countdownEl.innerHTML += createTimeBlock(days, 'Días');
+            countdownEl.innerHTML += createTimeBlock(hours, 'Horas');
+            countdownEl.innerHTML += createTimeBlock(minutes, 'Minutos');
+            countdownEl.innerHTML += createTimeBlock(seconds, 'Segundos');
+        }
+
+        let countdownInterval = null;
+
+        // Inicia la animación de flash y luego la cuenta regresiva
+        window.onload = function() {
+            // Animación de flash (quita el preloader después de 0.5 segundos)
+            const FLASH_DURATION_MS = 250; // 0.5 segundos
+
+            setTimeout(() => {
+                preloader.classList.add('hidden-flash');
+                // El contenedor principal (con la animación fadeIn) aparece
+            }, FLASH_DURATION_MS); 
+            
+            // Iniciar la cuenta regresiva
+            updateCountdown();
+            countdownInterval = setInterval(updateCountdown, 1000);
+        }
+    </script>
+
+</body>
+</html>
