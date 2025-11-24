@@ -2,19 +2,20 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>¡BIRGYFEST! - Confirmación de Asistencia</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Librería segura para generar QR localmente -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     
-    <!-- Importaciones de Firebase -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         
-        // --- TUS DATOS REALES DE FIREBASE ---
+        // --- CONFIGURACIONES ---
+        const EVENT_DATE = new Date("December 6, 2025 23:00:00").getTime();
+        const QR_BASE_URL = `https://slaraarcos-droid.github.io/BirgyFest/scanner.html?guestId=`;
+        
         const appId = 'birgyfest'; 
         const firebaseConfig = {
             apiKey: "AIzaSyCVf3c_hHbZnBkapODJK13Tef57IAZoOkU",
@@ -25,43 +26,92 @@
             appId: "1:748620159762:web:0fb391badf84f5df35f1cb",
         };
 
-        // --- URL DE TU ESCÁNER ---
-        // Asegúrate de que el archivo del escáner se llame 'scanner.html' en tu GitHub
-        const QR_BASE_URL = `https://slaraarcos-droid.github.io/BirgyFest/scanner.html?guestId=`;
-        
         let db, auth, userId;
 
-        // Inicializar Firebase
+        // --- FUNCIONES DE VISIBILIDAD ---
+        window.showForm = () => {
+            document.getElementById('form-container').classList.remove('hidden');
+            document.getElementById('info-event').classList.remove('hidden'); 
+            document.getElementById('qr-container').classList.add('hidden');
+        };
+        
+        // (La función resetRsvp ha sido eliminada de la interfaz pública)
+
+        const injectActiveQrButton = (guestId, guestName) => {
+            document.getElementById('btn-submit').classList.add('hidden');
+            document.getElementById('guest-name').classList.add('hidden');
+            document.getElementById('guest-name-label').classList.add('hidden');
+
+            const qrActiveDiv = document.getElementById('qr-active-status');
+            qrActiveDiv.innerHTML = `
+                <div class="glass-box-success p-4 rounded-xl text-center mb-4 border border-green-500/30">
+                    <p class="text-xs text-green-300 font-bold uppercase tracking-wider mb-1">PASE REGISTRADO</p>
+                    <p class="text-white font-bold text-lg">${guestName}</p>
+                </div>
+                <button id="btn-show-qr" onclick="showQrCode('${guestId}', '${guestName}')" 
+                    class="w-full btn-rsvp py-4 rounded-xl text-lg shadow-[0_0_20px_rgba(16,185,129,0.4)] mb-2"
+                    style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: 1px solid #34d399;">
+                    ¡VER MI QR DE ACCESO! 🎟️
+                </button>
+            `;
+            showForm();
+        };
+
         const app = initializeApp(firebaseConfig);
         db = getFirestore(app);
         auth = getAuth(app);
 
-        // Autenticación Anónima
-        signInAnonymously(auth).then(() => {
-            console.log("Conectado a Firebase.");
-        }).catch((error) => {
-            console.error("Error de conexión:", error);
-        });
+        signInAnonymously(auth).catch((error) => console.error("Error conexión:", error));
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 userId = user.uid;
-                // Si ya se registró antes, mostramos su QR guardado
                 const savedGuestId = localStorage.getItem('birgyfest_guest_id');
-                if (savedGuestId) {
-                    showQrCode(savedGuestId);
+                const savedGuestName = localStorage.getItem('birgyfest_guest_name');
+                
+                if (savedGuestId && savedGuestName) {
+                    injectActiveQrButton(savedGuestId, savedGuestName);
+                } else {
+                    showForm(); 
                 }
             }
         });
 
-        // Función para generar un ID único
+        const updateCountdown = () => {
+            const now = new Date().getTime();
+            const distance = EVENT_DATE - now;
+            if (distance < 0) {
+                document.getElementById("countdown").innerHTML = `<div class="w-full text-center glass-box p-4"><span class="text-yellow-400 title-font text-2xl tracking-widest glow-text">¡LA FIESTA YA EMPEZÓ!</span></div>`;
+                return;
+            }
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+            if (document.getElementById('days')) {
+                document.getElementById('days').textContent = String(days).padStart(2, '0');
+                document.getElementById('hours').textContent = String(hours).padStart(2, '0');
+                document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
+                document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
+            }
+        };
+
+        window.onload = () => {
+            updateCountdown();
+            setInterval(updateCountdown, 1000);
+        };
+
         const generateUUID = () => crypto.randomUUID();
 
-        // --- FUNCIÓN PRINCIPAL: REGISTRO ---
         window.handleRsvp = async () => {
             const guestName = document.getElementById('guest-name').value.trim();
-            const guestEmail = document.getElementById('guest-email').value.trim();
             
+            // Verificación silenciosa: Si ya existe, no deja registrar otro, pero no muestra botón de borrar.
+            if (localStorage.getItem('birgyfest_guest_id')) {
+                alert("Ya tienes un pase registrado en este dispositivo.");
+                return;
+            }
+
             if (!guestName) {
                 alert("Por favor, escribe tu nombre.");
                 return;
@@ -69,73 +119,76 @@
 
             const btn = document.getElementById('btn-submit');
             btn.disabled = true;
-            btn.textContent = "Generando Pase...";
+            btn.innerHTML = `<span class="animate-pulse">GENERANDO PASE...</span>`;
 
-            // 1. Creamos el ID único
             const guestId = generateUUID();
-
-            // 2. Datos a guardar
             const guestData = {
                 id: guestId,
                 name: guestName,
-                email: guestEmail || 'No especificado',
                 has_entered: false, 
                 timestamp: new Date(),
                 registered_by: userId
             };
 
             try {
-                // 3. Guardar en Firestore
                 await setDoc(doc(db, `/artifacts/${appId}/public/data/birgyfest_guests`, guestId), guestData);
                 
-                // 4. Guardar en el navegador
                 localStorage.setItem('birgyfest_guest_id', guestId);
+                localStorage.setItem('birgyfest_guest_name', guestName); 
                 
-                // 5. Mostrar el QR
-                showQrCode(guestId);
-                btn.textContent = "¡Registro Exitoso!";
+                showQrCode(guestId, guestName);
+                injectActiveQrButton(guestId, guestName); 
+                btn.classList.add('hidden'); 
 
             } catch (error) {
                 console.error("Error:", error);
-                alert("Hubo un error al guardar. Intenta de nuevo.");
+                alert("Error al guardar. Intenta de nuevo.");
                 btn.disabled = false;
                 btn.textContent = "¡CONFIRMO MI ASISTENCIA! (RSVP)";
             }
         };
 
-        // --- FUNCIÓN CORREGIDA PARA GENERAR QR ---
-        window.showQrCode = (guestId) => {
+        window.showQrCode = (guestId, guestName = 'Invitado') => { 
             const finalUrl = QR_BASE_URL + guestId;
-
             const qrContainer = document.getElementById('qr-container');
             const formContainer = document.getElementById('form-container');
+            const infoEvent = document.getElementById('info-event');
             
-            // Cambiar visibilidad
             formContainer.classList.add('hidden');
+            infoEvent.classList.add('hidden');
             qrContainer.classList.remove('hidden');
 
-            // Insertar estructura HTML
             qrContainer.innerHTML = `
-                <div class="p-6 bg-gray-900/90 rounded-2xl border-2 border-yellow-500 shadow-[0_0_30px_rgba(234,179,8,0.3)] animate-fade-in text-center flex flex-col items-center">
-                    <h3 class="text-3xl font-black mb-2 text-yellow-400 title-font tracking-widest">¡ESTÁS DENTRO!</h3>
-                    <p class="text-gray-300 mb-4 text-sm font-medium">Haz captura de pantalla a este código:</p>
+                <div class="glass-box p-8 rounded-3xl border border-yellow-500/50 shadow-[0_0_50px_rgba(234,179,8,0.2)] animate-fade-in text-center flex flex-col items-center relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-transparent via-yellow-500 to-transparent opacity-70"></div>
                     
-                    <!-- Contenedor blanco para el QR -->
-                    <div id="qrcode-canvas" class="p-4 bg-white rounded-xl mb-4"></div>
+                    <h3 class="text-4xl font-black mb-1 text-yellow-400 title-font tracking-widest glow-text">¡ESTÁS DENTRO!</h3>
+                    <p class="text-gray-400 mb-6 text-xs font-medium tracking-wide">HAZ CAPTURA DE PANTALLA</p>
                     
-                    <div class="bg-gray-800 rounded-lg p-3 border border-gray-700 w-full">
-                        <p class="text-xs text-gray-400 uppercase tracking-wider mb-1">ID DE ACCESO</p>
-                        <p class="text-xs text-yellow-500 font-mono break-all">${guestId}</p>
+                    <div class="bg-gray-900/80 rounded-xl p-4 border border-gray-700/50 w-full mb-6 backdrop-blur-sm">
+                        <p class="text-[10px] text-gray-500 uppercase tracking-[0.2em] mb-1">INVITADO VIP</p>
+                        <p class="text-xl text-white font-bold tracking-tight">${guestName}</p>
                     </div>
-                    <p class="text-sm text-green-400 mt-4 font-bold uppercase tracking-wider animate-pulse">Presenta esto en la entrada</p>
+
+                    <div class="p-4 bg-white rounded-2xl mb-6 shadow-xl">
+                        <div id="qrcode-canvas"></div>
+                    </div>
+                    
+                    <div class="bg-black/40 rounded-lg p-2 border border-white/5 w-full">
+                        <p class="text-[9px] text-gray-500 uppercase tracking-wider mb-1">ID ÚNICO</p>
+                        <p class="text-[10px] text-yellow-500/80 font-mono break-all">${guestId}</p>
+                    </div>
                 </div>
+                
+                <button onclick="showForm()" class="mt-8 text-gray-400 hover:text-white text-xs font-bold transition duration-300 flex items-center mx-auto uppercase tracking-widest">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                    Regresar
+                </button>
             `;
 
-            // Generar el QR usando la librería local (Sin errores de imagen rota)
-            // Usamos setTimeout para asegurar que el div existe
             setTimeout(() => {
                 const qrElement = document.getElementById("qrcode-canvas");
-                qrElement.innerHTML = ""; // Limpiar por si acaso
+                qrElement.innerHTML = "";
                 new QRCode(qrElement, {
                     text: finalUrl,
                     width: 200,
@@ -149,15 +202,98 @@
     </script>
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;700;900&display=swap');
+        
+        html, body {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
+        }
+
         body {
             font-family: 'Inter', sans-serif;
             background-color: #030712;
             color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
+
         .title-font { font-family: 'Bebas Neue', cursive; }
-        .neon-text { text-shadow: 0 0 10px rgba(234, 179, 8, 0.7); }
+        .glow-text { text-shadow: 0 0 20px rgba(234, 179, 8, 0.6); }
+
+        .card-scroll-container {
+            max-height: 100vh;
+            width: 100%;
+            overflow-y: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .card-scroll-container::-webkit-scrollbar { display: none; }
+
+        /* NUEVO ESTILO DEL CONTADOR EXACTO A LA IMAGEN */
+        .countdown-item {
+            background-color: #151921; /* Fondo muy oscuro */
+            border: 1px solid #2d3340; /* Borde sutil gris/azul */
+            border-radius: 0.75rem; /* Bordes redondeados */
+            width: 70px;
+            height: 75px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
         
+        .count-num {
+            font-family: 'Bebas Neue', cursive;
+            color: #fbbf24; /* Amarillo */
+            font-size: 2rem;
+            line-height: 1;
+        }
+        
+        .count-label {
+            font-size: 0.6rem;
+            color: #9ca3af; /* Gris texto */
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            margin-top: 4px;
+            text-transform: uppercase;
+        }
+
+        .glass-panel {
+            background: rgba(17, 24, 39, 0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .glass-box {
+            background: rgba(31, 41, 55, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .glass-box:hover {
+            background: rgba(31, 41, 55, 0.6);
+            border-color: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .glass-box-success {
+            background: rgba(6, 78, 59, 0.4);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            backdrop-filter: blur(5px);
+        }
+
         .btn-rsvp {
             background: linear-gradient(135deg, #eab308 0%, #a16207 100%);
             color: #000;
@@ -165,81 +301,124 @@
             transition: all 0.2s;
             text-transform: uppercase;
             letter-spacing: 0.05em;
+            border: none;
+            position: relative;
+            overflow: hidden;
         }
         .btn-rsvp:hover {
             transform: translateY(-2px);
-            box-shadow: 0 0 20px rgba(234, 179, 8, 0.5);
+            box-shadow: 0 0 30px rgba(234, 179, 8, 0.4);
         }
         .btn-rsvp:active { transform: scale(0.98); }
         
         .input-style {
-            background: #1f2937; 
-            border: 2px solid #374151; 
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             color: white; 
-            padding: 14px; 
+            padding: 16px; 
             border-radius: 12px; 
             outline: none;
-            transition: border-color 0.3s;
+            transition: all 0.3s;
+            font-weight: 600;
         }
-        .input-style:focus { border-color: #eab308; }
+        .input-style:focus { 
+            border-color: #eab308; 
+            background: rgba(0, 0, 0, 0.5);
+            box-shadow: 0 0 15px rgba(234, 179, 8, 0.1);
+        }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-4 bg-[url('https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=1920&auto=format&fit=crop')] bg-cover bg-center bg-no-repeat relative">
-    <!-- Capa oscura para leer el texto -->
-    <div class="absolute inset-0 bg-black/85 backdrop-blur-sm"></div>
+<body class="bg-[url('https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=1920&auto=format&fit=crop')] bg-cover bg-center bg-no-repeat">
+    
+    <div class="absolute inset-0 bg-black/80 backdrop-blur-[2px]"></div>
 
-    <div class="relative w-full max-w-md z-10">
+    <div class="card-scroll-container z-10 relative">
         
-        <!-- Tarjeta Principal -->
-        <div class="bg-gray-900/80 border border-gray-700 rounded-3xl p-8 shadow-2xl">
+        <div class="w-full max-w-[400px] glass-panel rounded-[2.5rem] p-8 shadow-2xl animate-fade-in my-auto">
             
             <header class="text-center mb-8">
-                <h1 class="title-font text-7xl text-yellow-400 mb-2 neon-text leading-none">BIRGYFEST</h1>
-                <p class="text-gray-400 text-xs font-bold uppercase tracking-[0.3em] border-b border-gray-700 pb-4">
-                    Exclusive Party Access
+                <h1 class="title-font text-[5rem] text-yellow-400 mb-2 neon-text leading-none tracking-tight glow-text">BIRGYFEST</h1>
+                <p class="text-blue-200 text-xs font-medium italic tracking-wide opacity-80">
+                    "Tu acceso a una noche donde la diversión la pones tú."
                 </p>
             </header>
-
-            <!-- Detalles Rápidos -->
-            <div class="grid grid-cols-2 gap-4 mb-8">
-                <div class="bg-gray-800/50 p-4 rounded-2xl border border-gray-700 text-center">
-                    <p class="text-blue-400 text-xs font-bold uppercase tracking-wider">Fecha</p>
-                    <p class="text-2xl font-black text-white title-font">06 DIC</p>
+            
+                        <div id="countdown" class="flex justify-center gap-3 mb-8">
+                <div class="countdown-item">
+                    <span id="days" class="count-num">00</span>
+                    <span class="count-label">DÍAS</span>
                 </div>
-                <div class="bg-gray-800/50 p-4 rounded-2xl border border-gray-700 text-center">
-                    <p class="text-blue-400 text-xs font-bold uppercase tracking-wider">Hora</p>
-                    <p class="text-2xl font-black text-white title-font">11:00 PM</p>
+                <div class="countdown-item">
+                    <span id="hours" class="count-num">00</span>
+                    <span class="count-label">HRS</span>
+                </div>
+                <div class="countdown-item">
+                    <span id="minutes" class="count-num">00</span>
+                    <span class="count-label">MIN</span>
+                </div>
+                <div class="countdown-item">
+                    <span id="seconds" class="count-num">00</span>
+                    <span class="count-label">SEG</span>
+                </div>
+            </div>
+            
+            <div id="info-event" class="space-y-3 mb-8">
+                <div class="glass-box p-4 rounded-xl flex justify-between items-center group">
+                    <div>
+                        <p class="text-gray-400 text-[10px] font-bold uppercase tracking-widest mb-1">FECHA & HORA</p>
+                        <p class="text-lg font-black text-white title-font tracking-wide">06 DIC - 11:00 PM</p>
+                    </div>
+                    <div class="h-8 w-8 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-yellow-500/20 transition">
+                        📅
+                    </div>
+                </div>
+
+                <div class="glass-box p-4 rounded-xl flex justify-between items-center">
+                    <div>
+                        <p class="text-gray-400 text-[10px] font-bold uppercase tracking-widest mb-1">UBICACIÓN</p>
+                        <p class="text-sm font-bold text-white">Dirección Secreta</p>
+                    </div>
+                    <a href="#" class="bg-blue-600/80 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg text-xs uppercase tracking-wide transition shadow-lg hover:shadow-blue-500/30">
+                        Ver Mapa
+                    </a>
+                </div>
+
+                <div class="glass-box p-4 rounded-xl border-l-2 border-l-yellow-500 space-y-2">
+                    <p class="text-gray-500 text-[9px] font-bold uppercase tracking-[0.2em] mb-2">CÓDIGO DE CONDUCTA</p>
+                    <div class="flex gap-2 items-start">
+                        <span class="text-lg">⚠️</span>
+                        <p class="text-xs text-gray-300 font-medium leading-relaxed">"Prohibido irse sobrio. Si no bebes, <span class="text-yellow-400 font-bold">nos ofendes</span>."</p>
+                    </div>
+                    <div class="flex gap-2 items-start">
+                        <span class="text-lg">🍻</span>
+                        <p class="text-xs text-gray-300 font-medium leading-relaxed">"Bebida en mano, fiesta asegurada. <span class="text-yellow-400 font-bold">¡No hay excusas!</span>"</p>
+                    </div>
                 </div>
             </div>
 
-            <!-- Formulario -->
-            <div id="form-container" class="space-y-5">
-                <div>
-                    <label class="block text-xs font-bold text-gray-500 uppercase mb-2 ml-1">Nombre Completo</label>
-                    <input type="text" id="guest-name" placeholder="Ej: Juan Pérez" class="w-full input-style">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-gray-500 uppercase mb-2 ml-1">Email (Opcional)</label>
-                    <input type="email" id="guest-email" placeholder="ejemplo@correo.com" class="w-full input-style">
+            <div id="form-container" class="space-y-4">
+                
+                <div id="qr-active-status"></div>
+
+                <div class="relative group">
+                    <label id="guest-name-label" class="absolute -top-2 left-3 bg-[#111827] px-2 text-[10px] font-bold text-yellow-500 uppercase tracking-wider">Nombre Completo</label>
+                    <input type="text" id="guest-name" placeholder="Escribe tu Nombre aquí..." class="w-full input-style text-center">
                 </div>
                 
-                <button id="btn-submit" onclick="handleRsvp()" class="w-full btn-rsvp py-4 rounded-xl text-lg shadow-lg mt-4">
-                    CONFIRMAR MI ASISTENCIA
+                <button id="btn-submit" onclick="handleRsvp()" class="w-full btn-rsvp py-4 rounded-xl text-xl shadow-lg title-font tracking-widest">
+                    ¡CONFIRMAR ASISTENCIA!
                 </button>
-                <p class="text-center text-xs text-gray-500 mt-4">
-                    Al confirmar, se generará tu pase QR único.
+                
+                <p class="text-center text-[10px] text-gray-500 pt-2 opacity-60">
+                    Al confirmar, se generará tu pase de entrada único e intransferible.
                 </p>
             </div>
 
-            <!-- Contenedor QR (Oculto inicialmente) -->
-            <div id="qr-container" class="hidden animate-fade-in">
-                <!-- Aquí se inyecta el QR -->
-            </div>
+            <div id="qr-container" class="hidden animate-fade-in"></div>
 
         </div>
         
-        <!-- Footer -->
-        <p class="text-center text-gray-600 text-xs mt-6 font-medium">
+        <p class="text-center text-gray-600/50 text-[10px] mt-6 font-medium uppercase tracking-widest">
             © 2025 BirgyFest Eventos
         </p>
     </div>
