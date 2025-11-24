@@ -36,9 +36,9 @@
         onAuthStateChanged(auth, (user) => {
             if(user) { 
                 isAuthReady = true; 
-                loadGuestList(); // Cargar lista al inicio
+                loadGuestList();
                 
-                // Si la URL trae ID, escanear directo
+                // Mantenemos esta parte por si quieres abrir un invitado por URL manualmente (ej. ?guestId=ABCD)
                 const urlParams = new URLSearchParams(window.location.search);
                 const guestId = urlParams.get('guestId');
                 if(guestId) {
@@ -53,7 +53,6 @@
             document.getElementById('scanner-view').classList.remove('hidden');
             document.getElementById('admin-view').classList.add('hidden');
             
-            // Actualizar botones de navegación
             document.getElementById('btn-nav-scan').classList.add('bg-blue-600', 'text-white');
             document.getElementById('btn-nav-scan').classList.remove('bg-gray-800', 'text-gray-400');
             
@@ -65,12 +64,10 @@
             document.getElementById('scanner-view').classList.add('hidden');
             document.getElementById('admin-view').classList.remove('hidden');
             
-            // Detener cámara si está activa
             if(html5QrCode && html5QrCode.isScanning) {
                 html5QrCode.stop().catch(err => console.log("Cámara detenida"));
             }
 
-            // Actualizar botones de navegación
             document.getElementById('btn-nav-list').classList.add('bg-blue-600', 'text-white');
             document.getElementById('btn-nav-list').classList.remove('bg-gray-800', 'text-gray-400');
             
@@ -125,7 +122,6 @@
                     });
                 }
                 
-                // Actualizar contadores
                 document.getElementById('stats-total').innerText = totalGuests;
                 document.getElementById('stats-entered').innerText = enteredGuests;
                 
@@ -144,7 +140,7 @@
             try {
                 const docRef = doc(db, GUESTS_COLLECTION_PATH, guestId);
                 await deleteDoc(docRef);
-                loadGuestList(); // Recargar lista
+                loadGuestList(); 
             } catch (error) {
                 alert(`Error al eliminar: ${error.message}`);
             }
@@ -201,7 +197,6 @@
 
         window.closeModal = () => {
             document.getElementById('result-modal').classList.add('hidden');
-            // Si el escáner estaba corriendo, sigue corriendo
         };
 
         function playSound(type) {
@@ -224,6 +219,10 @@
             oscillator.stop(audioCtx.currentTime + 0.3);
         }
 
+        /**
+         * 🔒 FUNCIÓN START SCANNER CORREGIDA: Acepta solo el ID de Firebase como texto plano.
+         * Si alguien lo escanea con la cámara del móvil, solo verá un texto inútil.
+         */
         window.startScanner = () => {
             html5QrCode = new Html5Qrcode("reader");
             const config = { fps: 10, qrbox: { width: 250, height: 250 } };
@@ -232,12 +231,13 @@
             
             html5QrCode.start({ facingMode: "environment" }, config, 
                 (decodedText) => {
-                    try {
-                        const url = new URL(decodedText);
-                        const id = url.searchParams.get("guestId");
-                        verifyGuest(id || decodedText);
-                    } catch (e) {
-                        verifyGuest(decodedText);
+                    // Eliminada la lógica de URL(new URL...) para aceptar solo texto plano.
+                    const guestId = decodedText.trim(); 
+                    
+                    if (guestId) {
+                        verifyGuest(guestId);
+                    } else {
+                        console.error("Escaneo fallido, texto vacío.");
                     }
                 },
                 () => {}
@@ -277,7 +277,7 @@
         }
 
         .custom-scrollbar::-webkit-scrollbar-thumb {
-            background-color: rgba(71, 85, 105, 0.5); /* gray-600/50 */
+            background-color: rgba(71, 85, 105, 0.5);
             border-radius: 2px;
         }
 
