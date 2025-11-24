@@ -247,7 +247,20 @@
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;700;900&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #030712; color: white; }
+        
+        /* 💡 AJUSTE CLAVE 1: Forzar altura al 100% del viewport en body y html */
+        html, body {
+            height: 100vh; /* Usa 100vh para asegurar que ocupa la altura total */
+            overflow: hidden; /* Evita el scroll del body */
+        }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #030712; 
+            color: white; 
+            /* min-h-screen se reemplaza por height: 100vh; */
+        }
+
         .title-font { font-family: 'Bebas Neue', cursive; }
         .glass-box { background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); }
         .glass-panel { background: rgba(17, 24, 39, 0.95); backdrop-filter: blur(10px); }
@@ -269,11 +282,11 @@
         }
     </style>
 </head>
-<body class="min-h-screen bg-[url('https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=1920')] bg-cover bg-center">
+<body class="bg-[url('https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=1920')] bg-cover bg-center">
     
     <div class="absolute inset-0 bg-black/90 backdrop-blur-sm"></div>
 
-    <main class="relative z-10 w-full max-w-md mx-auto min-h-screen flex flex-col p-4">
+    <main class="relative z-10 w-full max-w-md mx-auto h-full flex flex-col p-4">
         
         <header class="text-center py-4">
             <h1 class="title-font text-4xl text-white tracking-widest">BIRGY<span class="text-blue-500">SEC</span></h1>
