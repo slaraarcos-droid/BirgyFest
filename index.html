@@ -43,12 +43,12 @@
             const qrActiveDiv = document.getElementById('qr-active-status');
             
             qrActiveDiv.innerHTML = `
-                <div class="w-full bg-[#064e3b]/40 border border-green-500/30 rounded-xl p-4 text-center mb-3 backdrop-blur-sm shadow-lg">
-                    <p class="text-[10px] text-green-400 font-bold tracking-widest uppercase mb-1">PASE REGISTRADO</p>
-                    <p class="text-2xl text-white font-bold tracking-wide">${guestName}</p>
+                <div class="w-full bg-[#064e3b]/40 border border-green-500/30 rounded-xl p-3 text-center mb-3 backdrop-blur-sm shadow-lg">
+                    <p class="text-[9px] text-green-400 font-bold tracking-widest uppercase mb-1">PASE REGISTRADO</p>
+                    <p class="text-xl text-white font-bold tracking-wide truncate">${guestName}</p>
                 </div>
                 <button id="btn-show-qr" onclick="showQrCode('${guestId}', '${guestName}')" 
-                    class="w-full py-4 rounded-xl text-lg font-black text-black shadow-[0_0_25px_rgba(16,185,129,0.5)] transition-transform active:scale-95 uppercase tracking-wider flex items-center justify-center gap-2 hover:brightness-110"
+                    class="w-full py-3 rounded-xl text-base font-black text-black shadow-[0_0_25px_rgba(16,185,129,0.5)] transition-transform active:scale-95 uppercase tracking-wider flex items-center justify-center gap-2 hover:brightness-110"
                     style="background: linear-gradient(90deg, #34d399 0%, #10b981 100%);">
                     ¡VER MI QR DE ACCESO! 🎟️
                 </button>
@@ -80,7 +80,7 @@
             const now = new Date().getTime();
             const distance = EVENT_DATE - now;
             if (distance < 0) {
-                document.getElementById("countdown").innerHTML = `<div class="w-full text-center glass-box p-4"><span class="text-yellow-400 title-font text-2xl tracking-widest glow-text">¡LA FIESTA YA EMPEZÓ!</span></div>`;
+                document.getElementById("countdown").innerHTML = `<div class="w-full text-center glass-box p-3"><span class="text-yellow-400 title-font text-2xl tracking-widest glow-text">¡LA FIESTA YA EMPEZÓ!</span></div>`;
                 return;
             }
             const days = Math.floor(distance / (1000 * 60 * 60 * 24));
@@ -117,7 +117,7 @@
 
             const btn = document.getElementById('btn-submit');
             btn.disabled = true;
-            btn.innerHTML = `<span class="animate-pulse">GENERANDO PASE...</span>`;
+            btn.innerHTML = `<span class="animate-pulse">GENERANDO...</span>`;
 
             const guestId = generateUUID();
             const guestData = {
@@ -157,28 +157,28 @@
             qrContainer.classList.remove('hidden');
 
             qrContainer.innerHTML = `
-                <div class="glass-box p-6 sm:p-8 rounded-3xl border border-yellow-500/50 shadow-[0_0_50px_rgba(234,179,8,0.2)] animate-fade-in text-center flex flex-col items-center relative overflow-hidden">
+                <div class="glass-box p-6 rounded-3xl border border-yellow-500/50 shadow-[0_0_50px_rgba(234,179,8,0.2)] animate-fade-in text-center flex flex-col items-center relative overflow-hidden">
                     <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-transparent via-yellow-500 to-transparent opacity-70"></div>
                     
-                    <h3 class="text-3xl sm:text-4xl font-black mb-1 text-yellow-400 title-font tracking-widest glow-text">¡ESTÁS DENTRO!</h3>
-                    <p class="text-gray-400 mb-6 text-xs font-medium tracking-wide">HAZ CAPTURA DE PANTALLA</p>
+                    <h3 class="text-3xl font-black mb-1 text-yellow-400 title-font tracking-widest glow-text">¡ESTÁS DENTRO!</h3>
+                    <p class="text-gray-400 mb-4 text-[10px] font-medium tracking-wide">HAZ CAPTURA DE PANTALLA</p>
                     
-                    <div class="bg-gray-900/80 rounded-xl p-4 border border-gray-700/50 w-full mb-6 backdrop-blur-sm">
-                        <p class="text-[10px] text-gray-500 uppercase tracking-[0.2em] mb-1">INVITADO VIP</p>
-                        <p class="text-xl text-white font-bold tracking-tight">${guestName}</p>
+                    <div class="bg-gray-900/80 rounded-xl p-3 border border-gray-700/50 w-full mb-4 backdrop-blur-sm">
+                        <p class="text-[9px] text-gray-500 uppercase tracking-[0.2em] mb-1">INVITADO VIP</p>
+                        <p class="text-lg text-white font-bold tracking-tight truncate">${guestName}</p>
                     </div>
 
-                    <div class="p-3 bg-white rounded-2xl mb-6 shadow-xl">
+                    <div class="p-3 bg-white rounded-2xl mb-4 shadow-xl">
                         <div id="qrcode-canvas"></div>
                     </div>
                     
                     <div class="bg-black/40 rounded-lg p-2 border border-white/5 w-full">
-                        <p class="text-[9px] text-gray-500 uppercase tracking-wider mb-1">ID ÚNICO</p>
-                        <p class="text-[10px] text-yellow-500/80 font-mono break-all">${guestId}</p>
+                        <p class="text-[8px] text-gray-500 uppercase tracking-wider mb-1">ID ÚNICO</p>
+                        <p class="text-[9px] text-yellow-500/80 font-mono break-all leading-tight">${guestId}</p>
                     </div>
                 </div>
                 
-                <button onclick="showForm()" class="mt-8 text-gray-400 hover:text-white text-xs font-bold transition duration-300 flex items-center mx-auto uppercase tracking-widest">
+                <button onclick="showForm()" class="mt-6 text-gray-400 hover:text-white text-xs font-bold transition duration-300 flex items-center mx-auto uppercase tracking-widest">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
                     Regresar
                 </button>
@@ -189,8 +189,8 @@
                 qrElement.innerHTML = "";
                 new QRCode(qrElement, {
                     text: finalUrl,
-                    width: 200,
-                    height: 200,
+                    width: 180,
+                    height: 180,
                     colorDark : "#000000",
                     colorLight : "#ffffff",
                     correctLevel : QRCode.CorrectLevel.H
@@ -205,9 +205,10 @@
         html, body {
             height: 100%;
             width: 100%;
-            overflow: hidden;
+            overflow: hidden; /* BLOQUEA SCROLL EN TODO EL CUERPO */
             margin: 0;
             padding: 0;
+            position: fixed; /* ASEGURA QUE NO SE MUEVA EN IOS */
         }
 
         body {
@@ -222,35 +223,42 @@
         .title-font { font-family: 'Bebas Neue', cursive; }
         .glow-text { text-shadow: 0 0 20px rgba(234, 179, 8, 0.6); }
 
-        /* === CONTENEDOR PRINCIPAL === */
-        .card-scroll-container {
+        /* === CONTENEDOR INTELIGENTE === */
+        /* Este contenedor centra todo y usa transform:scale() para pantallas pequeñas */
+        .fit-screen {
             width: 100%;
-            height: 100%;
-            max-height: 100vh;
-            overflow-y: auto;
-            scrollbar-width: none;
-            -ms-overflow-style: none;
-            padding: 1rem;
+            max-width: 400px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            /* Centrado vertical solo si hay espacio suficiente */
-            justify-content: flex-start; 
+            justify-content: center;
+            transform-origin: center center;
+            /* Por defecto escala normal */
+            transform: scale(1);
+            transition: transform 0.3s ease;
         }
-        /* Media Query para pantallas altas (Desktop/Celulares largos): Centrar verticalmente */
-        @media (min-height: 800px) {
-            .card-scroll-container { justify-content: center; }
+
+        /* === LA MAGIA: AUTO-ESCALADO PARA CELULARES === */
+        /* Si la altura es menor a 750px (la mayoría de celulares), reduce al 90% */
+        @media (max-height: 750px) {
+            .fit-screen { transform: scale(0.90); }
         }
-        
-        .card-scroll-container::-webkit-scrollbar { display: none; }
+        /* Si la altura es menor a 650px (celulares pequeños), reduce al 80% */
+        @media (max-height: 650px) {
+            .fit-screen { transform: scale(0.80); }
+        }
+        /* Si la altura es menor a 580px (iPhone SE antiguo), reduce al 70% */
+        @media (max-height: 580px) {
+            .fit-screen { transform: scale(0.70); }
+        }
 
         /* === DISEÑO DEL CONTADOR === */
         .countdown-item {
             background-color: #151921;
             border: 1px solid #2d3340;
-            border-radius: 0.75rem;
-            width: 65px;
-            height: 70px;
+            border-radius: 0.6rem;
+            width: 60px; /* Más compacto */
+            height: 65px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -261,22 +269,22 @@
         .count-num {
             font-family: 'Bebas Neue', cursive;
             color: #fbbf24;
-            font-size: 1.8rem;
+            font-size: 1.6rem;
             line-height: 1;
         }
         
         .count-label {
-            font-size: 0.55rem;
+            font-size: 0.5rem;
             color: #9ca3af;
             font-weight: 700;
             letter-spacing: 0.05em;
-            margin-top: 4px;
+            margin-top: 3px;
             text-transform: uppercase;
         }
 
         /* === EFECTOS DE CAJAS === */
         .glass-panel {
-            background: rgba(17, 24, 39, 0.75);
+            background: rgba(17, 24, 39, 0.85);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.08);
@@ -285,7 +293,6 @@
 
         .glass-box {
             background: rgba(31, 41, 55, 0.4);
-            /* Borde sutil dorado como solicitado */
             border: 1px solid rgba(234, 179, 8, 0.2); 
             transition: all 0.3s ease;
         }
@@ -294,15 +301,15 @@
             border-color: rgba(234, 179, 8, 0.4);
         }
 
-        /* === BOTÓN MAPA AZUL === */
+        /* === BOTONES === */
         .btn-map {
-            background-color: #2563eb; /* Azul intenso */
+            background-color: #2563eb; 
             color: white;
             font-weight: 800;
             text-transform: uppercase;
-            font-size: 0.7rem;
-            padding: 0.5rem 1rem;
-            border-radius: 0.5rem;
+            font-size: 0.65rem;
+            padding: 0.4rem 0.8rem;
+            border-radius: 0.4rem;
             letter-spacing: 0.05em;
             box-shadow: 0 4px 6px rgba(37, 99, 235, 0.3);
             transition: all 0.2s;
@@ -310,10 +317,8 @@
         .btn-map:hover {
             background-color: #1d4ed8;
             transform: translateY(-1px);
-            box-shadow: 0 6px 10px rgba(37, 99, 235, 0.4);
         }
 
-        /* === BOTÓN RSVP AMARILLO/DORADO === */
         .btn-rsvp {
             background: linear-gradient(135deg, #eab308 0%, #a16207 100%);
             color: #000;
@@ -330,7 +335,7 @@
             background: rgba(0, 0, 0, 0.3);
             border: 1px solid rgba(255, 255, 255, 0.1);
             color: white; 
-            padding: 16px; 
+            padding: 14px; /* Un poco menos de padding */
             border-radius: 12px; 
             outline: none;
             transition: all 0.3s;
@@ -346,18 +351,18 @@
     
     <div class="absolute inset-0 bg-black/85 backdrop-blur-[2px]"></div>
 
-    <div class="card-scroll-container z-10 relative">
+    <div class="fit-screen z-10 p-4">
         
-        <div class="w-full max-w-[400px] glass-panel rounded-[2rem] p-6 sm:p-8 shadow-2xl animate-fade-in my-auto">
+        <div class="w-full glass-panel rounded-[2rem] p-5 sm:p-8 shadow-2xl animate-fade-in">
             
-            <header class="text-center mb-6 sm:mb-8">
-                <h1 class="title-font text-6xl sm:text-[5rem] text-yellow-400 mb-2 neon-text leading-none tracking-tight glow-text">BIRGYFEST</h1>
-                <p class="text-blue-100 text-sm font-medium italic tracking-wide drop-shadow-md opacity-90">
+            <header class="text-center mb-4">
+                <h1 class="title-font text-5xl text-yellow-400 mb-1 neon-text leading-none tracking-tight glow-text">BIRGYFEST</h1>
+                <p class="text-blue-100 text-xs font-medium italic tracking-wide drop-shadow-md opacity-90">
                     "Tu acceso a una noche donde la diversión la pones tú."
                 </p>
             </header>
             
-            <div id="countdown" class="flex justify-center gap-3 mb-6 sm:mb-8">
+            <div id="countdown" class="flex justify-center gap-2 mb-5">
                 <div class="countdown-item">
                     <span id="days" class="count-num">00</span>
                     <span class="count-label">DÍAS</span>
@@ -376,21 +381,21 @@
                 </div>
             </div>
             
-            <div id="info-event" class="space-y-3 mb-6 sm:mb-8">
-                <div class="glass-box p-4 rounded-xl flex justify-between items-center">
+            <div id="info-event" class="space-y-2 mb-5">
+                <div class="glass-box p-3 rounded-xl flex justify-between items-center">
                     <div>
-                        <p class="text-gray-400 text-[10px] font-bold uppercase tracking-widest mb-1">FECHA & HORA</p>
-                        <p class="text-lg font-black text-white title-font tracking-wide">06 DIC - 11:00 PM</p>
+                        <p class="text-gray-400 text-[9px] font-bold uppercase tracking-widest mb-0.5">FECHA & HORA</p>
+                        <p class="text-base font-black text-white title-font tracking-wide">06 DIC - 11:00 PM</p>
                     </div>
-                    <div class="h-8 w-8 rounded-full bg-white/5 flex items-center justify-center text-gray-300">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                    <div class="h-7 w-7 rounded-full bg-white/5 flex items-center justify-center text-gray-300">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                     </div>
                 </div>
 
-                <div class="glass-box p-4 rounded-xl flex justify-between items-center">
+                <div class="glass-box p-3 rounded-xl flex justify-between items-center">
                     <div>
-                        <p class="text-gray-400 text-[10px] font-bold uppercase tracking-widest mb-1">UBICACIÓN</p>
-                        <p class="text-sm font-bold text-white">Dirección secreta</p>
+                        <p class="text-gray-400 text-[9px] font-bold uppercase tracking-widest mb-0.5">UBICACIÓN</p>
+                        <p class="text-sm font-bold text-white">Dirección Secreta</p>
                         <p class="text-[9px] text-yellow-500/80 italic mt-0.5">Ref: ¡Última casa de la calle!</p>
                     </div>
                     <a href="https://maps.app.goo.gl/J3o71LqmDoY6vfRU8" target="_blank" class="btn-map">
@@ -398,34 +403,34 @@
                     </a>
                 </div>
 
-                <div class="glass-box p-4 rounded-xl border-l-2 border-l-yellow-500 space-y-2">
-                    <p class="text-gray-500 text-[9px] font-bold uppercase tracking-[0.2em] mb-2">CÓDIGO DE CONDUCTA</p>
+                <div class="glass-box p-3 rounded-xl border-l-2 border-l-yellow-500 space-y-1.5">
+                    <p class="text-gray-500 text-[8px] font-bold uppercase tracking-[0.2em] mb-1">CÓDIGO DE CONDUCTA</p>
                     <div class="flex gap-2 items-start">
-                        <span class="text-lg">⚠️</span>
-                        <p class="text-[11px] text-gray-300 font-medium leading-relaxed">"Prohibido irse sobrio. Si no bebes, <span class="text-yellow-400 font-bold">nos ofendes</span>."</p>
+                        <span class="text-base">⚠️</span>
+                        <p class="text-[10px] text-gray-300 font-medium leading-snug">"Prohibido irse sobrio. Si no bebes, <span class="text-yellow-400 font-bold">nos ofendes</span>."</p>
                     </div>
                     <div class="flex gap-2 items-start">
-                        <span class="text-lg">🍻</span>
-                        <p class="text-[11px] text-gray-300 font-medium leading-relaxed">"Bebida en mano, fiesta asegurada. <span class="text-yellow-400 font-bold">¡No hay excusas!</span>"</p>
+                        <span class="text-base">🍻</span>
+                        <p class="text-[10px] text-gray-300 font-medium leading-snug">"Bebida en mano, fiesta asegurada. <span class="text-yellow-400 font-bold">¡No hay excusas!</span>"</p>
                     </div>
                 </div>
             </div>
 
-            <div id="form-container" class="space-y-4">
+            <div id="form-container" class="space-y-3">
                 
                 <div id="qr-active-status"></div>
 
                 <div class="relative group">
                     <label id="guest-name-label" class="hidden"></label>
-                    <input type="text" id="guest-name" placeholder="Escribe tu nombre completo" class="w-full input-style text-center placeholder-gray-500">
+                    <input type="text" id="guest-name" placeholder="Escribe tu Nombre Completo" class="w-full input-style text-center text-sm placeholder-gray-500">
                 </div>
                 
-                <button id="btn-submit" onclick="handleRsvp()" class="w-full btn-rsvp py-4 rounded-xl text-xl shadow-lg title-font tracking-widest">
+                <button id="btn-submit" onclick="handleRsvp()" class="w-full btn-rsvp py-3.5 rounded-xl text-lg shadow-lg title-font tracking-widest">
                     ¡CONFIRMAR ASISTENCIA!
                 </button>
                 
-                <p class="text-center text-[10px] text-gray-500 pt-2 opacity-60">
-                    Al confirmar, se generará tu pase de entrada único e intransferible.
+                <p class="text-center text-[9px] text-gray-500 pt-1 opacity-60">
+                    Al confirmar, se generará tu pase único e intransferible.
                 </p>
             </div>
 
@@ -433,8 +438,8 @@
 
         </div>
         
-        <p class="text-center text-gray-600/50 text-[10px] mt-6 font-medium uppercase tracking-widest absolute bottom-2">
-            © 2025 BIRGYFEST EVENTOS
+        <p class="text-center text-gray-600/50 text-[9px] mt-4 font-medium uppercase tracking-widest">
+            © 2025 BirgyFest Eventos
         </p>
     </div>
 
